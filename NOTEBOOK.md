@@ -12,7 +12,7 @@
 #### 2. 🗺️ La Feuille de Route de l'Agence (Suivi des Jalons)
 
 * [x] **Jalon 1 :** Conception & Cahier des charges
-* [ ] **Jalon 2 :** Modélisation & Initialisation de l'API
+* [x] **Jalon 2 :** Modélisation & Initialisation de l'API
 * [ ] **Jalon 3 :** Sécurisation JWT & Rôles
 * [ ] **Jalon 4 :** Architecture Front React (Axios en 3 couches)
 * [ ] **Jalon 5 :** Intégration UX & Formulaires (422/401)
