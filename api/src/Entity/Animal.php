@@ -46,6 +46,7 @@ class Animal
      * @var Collection<int, Consultation>
      */
     #[ORM\OneToMany(targetEntity: Consultation::class, mappedBy: 'animal')]
+    #[Groups(['animal:read'])]
     private Collection $consultations;
 
     public function __construct()
