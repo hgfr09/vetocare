@@ -18,11 +18,11 @@ class Consultation
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['consultation:read'])]
+    #[Groups(['consultation:read', 'animal:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['consultation:read'])]
+    #[Groups(['consultation:read', 'animal:read'])]
     private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column(length: 255)]
@@ -55,13 +55,6 @@ class Consultation
     public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
-    }
-
-    public function setDate(\DateTimeImmutable $date): static
-    {
-        $this->date = $date;
-
-        return $this;
     }
 
     public function getReason(): ?string
