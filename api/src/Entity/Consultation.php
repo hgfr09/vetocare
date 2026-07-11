@@ -2,6 +2,10 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ConsultationRepository;
 use Doctrine\DBAL\Types\Types;
@@ -13,6 +17,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['consultation:read']],
     denormalizationContext: ['groups' => ['consultation:write']]
 )]
+#[ApiFilter(DateFilter::class, properties: ['date'])]
+#[ApiFilter(OrderFilter::class, properties: ['date'])]
+#[ApiFilter(SearchFilter::class, properties: ['animal.name', 'animal.id'])]
 class Consultation
 {
     #[ORM\Id]

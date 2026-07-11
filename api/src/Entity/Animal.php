@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AnimalRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -14,6 +17,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['animal:read']],
     denormalizationContext: ['groups' => ['animal:write']]
 )]
+#[ApiFilter(filterClass: OrderFilter::class, properties: ['dateOfBirth'])]
+#[ApiFilter(filterClass: SearchFilter::class, properties: ['species', 'ownerName' => 'partial'])]
 class Animal
 {
     #[ORM\Id]
@@ -28,6 +33,7 @@ class Animal
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['animal:read', 'animal:write'])]
+
     private ?string $species = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -40,6 +46,7 @@ class Animal
 
     #[ORM\Column(length: 255)]
     #[Groups(['animal:read', 'animal:write'])]
+
     private ?string $ownerName = null;
 
     /**
