@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
 #[ApiResource(
@@ -29,11 +30,12 @@ class Animal
 
     #[ORM\Column(length: 255)]
     #[Groups(['animal:read', 'animal:write', 'consultation:read'])]
+    #[Assert\NotBlank(message: "Le nom est obligatoire.")]
     private ?string $name = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
     #[Groups(['animal:read', 'animal:write'])]
-
+    #[Assert\NotBlank(message: "L'espèce est obligatoire.")]
     private ?string $species = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -41,12 +43,14 @@ class Animal
     private ?string $breed = null;
 
     #[ORM\Column]
-    #[Groups(['animal:read', 'animal:write'])]
+    #[Groups(['animal:read', 'animal:write', 'consultation:read'])]
+    #[Assert\NotBlank(message: "La date est obligatoire.")]
+    #[Assert\LessThanOrEqual(value: 'now', message: "La date de naissance doit être inférieure ou égale à aujourd'hui.")]
     private ?\DateTimeImmutable $dateOfBirth = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['animal:read', 'animal:write'])]
-
+    #[Assert\Length(min: 3, minMessage: 'Trop court! Minimum 3 caractères.')]
     private ?string $ownerName = null;
 
     /**

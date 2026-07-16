@@ -36,7 +36,7 @@ final class UserFactory extends PersistentObjectFactory
     protected function defaults(): array|callable
     {
         return [
-            'email' => self::faker()->unique()->email,
+            'email' => self::faker()->unique()->email(),
             'plainPassword' => '123456',
             'roles' => [],
         ];
@@ -51,6 +51,7 @@ final class UserFactory extends PersistentObjectFactory
         return $this
             ->afterInstantiate(function(User $user): void {
                 $user->setPassword($this->passwordHasher->hashPassword($user, $user->getPlainPassword()));
+                $user->eraseCredentials();
             })
         ;
     }

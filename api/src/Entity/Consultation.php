@@ -11,6 +11,7 @@ use App\Repository\ConsultationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ConsultationRepository::class)]
 #[ApiResource(
@@ -29,15 +30,23 @@ class Consultation
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['consultation:read', 'animal:read'])]
+    #[Groups(['consultation:read', 'consultation:write', 'animal:read'])]
+    #[Assert\NotBlank(message: "La date de consultation est obligatoire.")]
+    #[Assert\LessThanOrEqual(value: 'now', message: "La date de consultation doit être inférieure ou égale à aujourd'hui.")]
+    #[Assert\Expression(
+        expression: 'this.getDate() > this.getAnimal().getDateOfBirth()',
+        message: "La date de consultation ne peut être inférieure à la date de naissance du patient.",
+    )]
     private ?\DateTimeImmutable $date = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['consultation:read', 'consultation:write'])]
+    #[Assert\NotBlank(message: "La motif est obligatoire.")]
     private ?string $reason = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Groups(['consultation:read', 'consultation:write'])]
+    #[Assert\NotBlank(message: "Le diagnostic est obligatoire.")]
     private ?string $diagnosis = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -47,6 +56,7 @@ class Consultation
     #[ORM\ManyToOne(inversedBy: 'consultations')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['consultation:read', 'consultation:write'])]
+    #[Assert\NotBlank(message: "Le patient est obligatoire.")]
     private ?Animal $animal = null;
 
     public function __construct()
@@ -62,6 +72,12 @@ class Consultation
     public function getDate(): ?\DateTimeImmutable
     {
         return $this->date;
+    }
+
+    public function setDate(\DateTimeImmutable $date): static
+    {
+        $this->date = $date;
+        return $this;
     }
 
     public function getReason(): ?string

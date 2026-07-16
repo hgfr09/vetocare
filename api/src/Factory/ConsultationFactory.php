@@ -16,9 +16,7 @@ final class ConsultationFactory extends PersistentObjectFactory
      *
      * @todo inject services if required
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     #[\Override]
     public static function class(): string
@@ -38,8 +36,8 @@ final class ConsultationFactory extends PersistentObjectFactory
             'animal' => AnimalFactory::randomOrCreate(),
             'diagnosis' => self::faker()->text(200),
             'reason' => self::faker()->text(100),
-            'prescribedTreatment'=>self::faker()->text(200),
-            'date'=>\DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('-4 years'))
+            'prescribedTreatment' => self::faker()->text(200),
+            // 'date'=>\DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('-4 years'))
         ];
     }
 
@@ -50,9 +48,9 @@ final class ConsultationFactory extends PersistentObjectFactory
     protected function initialize(): static
     {
         return $this
-            ->instantiateWith(
-                Instantiator::withConstructor()->alwaysForce('date')
-            );
-        ;
+            ->afterInstantiate(function (Consultation $consultation): void {
+                $dateOfBirth = $consultation->getAnimal()->getDateOfBirth()->format('c');
+                $consultation->setDate(\DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween($dateOfBirth)));
+            });
     }
 }

@@ -34,9 +34,9 @@ final class AnimalFactory extends PersistentObjectFactory
     protected function defaults(): array|callable
     {
         return [
-            'dateOfBirth' => \DateTimeImmutable::createFromMutable(self::faker()->dateTime()),
-            'name' => self::faker()->unique()->firstName,
-            'ownerName' => self::faker()->name,
+            'dateOfBirth' => \DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('-10 years')),
+            'name' => self::faker()->unique()->firstName(),
+            'ownerName' => self::faker()->name(),
             'species' => self::faker()->sentence(2),
             'breed'=> self::faker()->sentence(3)
         ];
