@@ -35,3 +35,8 @@ api/public/bundles/
 api/var
 api/vendor/
 ###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+api/phpunit.xml
+api/.phpunit.cache/
+###< phpunit/phpunit ###
