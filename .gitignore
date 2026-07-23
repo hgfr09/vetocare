@@ -36,6 +36,10 @@ api/var
 api/vendor/
 ###< symfony/framework-bundle ###
 
+###> lexik/jwt-authentication-bundle ###
+api/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
 ###> phpunit/phpunit ###
 api/phpunit.xml
 api/.phpunit.cache/
