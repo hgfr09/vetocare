@@ -34,7 +34,7 @@ class Consultation
     #[Assert\NotBlank(message: "La date de consultation est obligatoire.")]
     #[Assert\LessThanOrEqual(value: 'now', message: "La date de consultation doit être inférieure ou égale à aujourd'hui.")]
     #[Assert\Expression(
-        expression: 'this.getDate() > this.getAnimal().getDateOfBirth()',
+        expression: 'this.getAnimal() == null or this.getDate() >= this.getAnimal().getDateOfBirth()',
         message: "La date de consultation ne peut être inférieure à la date de naissance du patient.",
     )]
     private ?\DateTimeImmutable $date = null;
@@ -58,6 +58,12 @@ class Consultation
     #[Groups(['consultation:read', 'consultation:write'])]
     #[Assert\NotBlank(message: "Le patient est obligatoire.")]
     private ?Animal $animal = null;
+
+    #[ORM\ManyToOne(inversedBy: 'consultations')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['consultation:read'])]
+    #[Assert\NotBlank(message: "Le vétérinaire est obligatoire")]
+    private ?User $veterinarian = null;
 
     public function __construct()
     {
@@ -124,6 +130,18 @@ class Consultation
     public function setAnimal(?Animal $animal): static
     {
         $this->animal = $animal;
+
+        return $this;
+    }
+
+    public function getVeterinarian(): ?User
+    {
+        return $this->veterinarian;
+    }
+
+    public function setVeterinarian(?User $veterinarian): static
+    {
+        $this->veterinarian = $veterinarian;
 
         return $this;
     }
