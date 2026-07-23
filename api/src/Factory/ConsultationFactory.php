@@ -37,7 +37,6 @@ final class ConsultationFactory extends PersistentObjectFactory
             'diagnosis' => self::faker()->text(200),
             'reason' => self::faker()->text(100),
             'prescribedTreatment' => self::faker()->text(200),
-            // 'date'=>\DateTimeImmutable::createFromMutable(self::faker()->dateTimeBetween('-4 years'))
         ];
     }
 

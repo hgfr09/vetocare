@@ -3,19 +3,22 @@
 namespace App\Tests;
 
 use App\Factory\AnimalFactory;
+use App\Factory\UserFactory;
 
 final class  ConsultationTest extends AbstractApiTestCase
 {
-
-    public function testCreateSuccessfullConsultation(): void{
+    public function testCreateSuccessfullConsultation(): void
+    {
         $animal = AnimalFactory::createOne();
+        $user = UserFactory::createOne();
 
         static::createClient()->request('POST', '/api/consultations', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [
                 'animal' => '/api/animals/' . $animal->getId(),
                 'reason' => 'Control',
-                'diagnosis' => 'RAS'
+                'diagnosis' => 'RAS',
+                'veterinarian' => '/api/users/' . $user->getId()
             ]
         ]);
 
@@ -25,8 +28,10 @@ final class  ConsultationTest extends AbstractApiTestCase
     public function testCannotCreateConsultationWhenAnimalBirthDateIsInFuture(): void
     {
         $animal = AnimalFactory::createOne([
-            'dateOfBirth'=>new \DateTimeImmutable()
+            'dateOfBirth' => new \DateTimeImmutable()
         ]);
+
+        $user = UserFactory::createOne();
 
         static::createClient()->request('POST', '/api/consultations', [
             'headers' => self::$HEADERS_WRITE,
@@ -34,7 +39,8 @@ final class  ConsultationTest extends AbstractApiTestCase
                 'animal' => '/api/animals/' . $animal->getId(),
                 'date' => new \DateTimeImmutable('yesterday')->format('c'),
                 'reason' => 'Control',
-                'diagnosis' => 'RAS'
+                'diagnosis' => 'RAS',
+                'veterinarian' => '/api/users/' . $user->getId()
             ]
         ]);
 
@@ -48,5 +54,5 @@ final class  ConsultationTest extends AbstractApiTestCase
                 ]
             ]
         ]);
-    } 
+    }
 }
