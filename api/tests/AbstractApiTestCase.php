@@ -3,6 +3,9 @@
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Symfony\Bundle\Test\Client;
+use App\Entity\User;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 abstract class AbstractApiTestCase extends ApiTestCase
 {
@@ -15,4 +18,15 @@ abstract class AbstractApiTestCase extends ApiTestCase
         "Accept" => "application/ld+json",
         "Content-Type" => "application/ld+json"
     ];
+
+    protected function createAuthenticatedClient(User $user): Client
+    {
+        self::bootKernel();
+
+        $jwtManager = self::getContainer()->get(JWTTokenManagerInterface::class);
+
+        $token = $jwtManager->create($user);
+
+        return static::createClient([], ['headers' => ['Authorization' => sprintf('Bearer %s', $token)]]);
+    }
 }
