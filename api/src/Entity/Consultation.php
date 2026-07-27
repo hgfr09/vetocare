@@ -7,6 +7,7 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use App\Interface\UserAwareInterface;
 use App\Repository\ConsultationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -21,7 +22,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiFilter(DateFilter::class, properties: ['date'])]
 #[ApiFilter(OrderFilter::class, properties: ['date'])]
 #[ApiFilter(SearchFilter::class, properties: ['animal.name', 'animal.id'])]
-class Consultation
+class Consultation implements UserAwareInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -62,7 +63,7 @@ class Consultation
     #[ORM\ManyToOne(inversedBy: 'consultations')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['consultation:read'])]
-    #[Assert\NotBlank(message: "Le vétérinaire est obligatoire")]
+    #[Assert\NotBlank(groups: ['internal'], message: "Le vétérinaire est obligatoire.")]
     private ?User $veterinarian = null;
 
     public function __construct()
