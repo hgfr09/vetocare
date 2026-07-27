@@ -7,22 +7,47 @@ use App\Factory\UserFactory;
 
 final class  ConsultationTest extends AbstractApiTestCase
 {
-    public function testCreateSuccessfullConsultation(): void
+    public function testCannotCreateConsultationAsAnonymous(): void
     {
         $animal = AnimalFactory::createOne();
-        $user = UserFactory::createOne();
-
         static::createClient()->request('POST', '/api/consultations', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [
                 'animal' => '/api/animals/' . $animal->getId(),
                 'reason' => 'Control',
-                'diagnosis' => 'RAS',
-                'veterinarian' => '/api/users/' . $user->getId()
+                'diagnosis' => 'RAS'
             ]
         ]);
 
-        $this->assertResponseStatusCodeSame(201);
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertJsonContains([
+            "@type" => "ConstraintViolation",
+            "violations" => [
+                [
+                    "propertyPath" => "veterinarian",
+                    "message" => "Le vétérinaire est obligatoire."
+                ]
+            ]
+        ]);
+    }
+
+    public function testCreateConsultationAsAuthenticatedUser(): void
+    {
+        $animal = AnimalFactory::createOne();
+        $user = UserFactory::createOne(['roles' => ['ROLE_VET']]);
+
+        $client = $this->createAuthenticatedClient($user);
+
+        $client->request('POST', '/api/consultations', [
+            'headers' => self::$HEADERS_WRITE,
+            'json' => [
+                'animal' => '/api/animals/' . $animal->getId(),
+                'reason' => 'Control',
+                'diagnosis' => 'RAS'
+            ]
+        ]);
+
+        $this->assertResponseIsSuccessful();
     }
 
     public function testCannotCreateConsultationWhenAnimalBirthDateIsInFuture(): void
@@ -33,14 +58,15 @@ final class  ConsultationTest extends AbstractApiTestCase
 
         $user = UserFactory::createOne();
 
-        static::createClient()->request('POST', '/api/consultations', [
+        $client = $this->createAuthenticatedClient($user);
+
+        $client->request('POST', '/api/consultations', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [
                 'animal' => '/api/animals/' . $animal->getId(),
                 'date' => new \DateTimeImmutable('yesterday')->format('c'),
                 'reason' => 'Control',
-                'diagnosis' => 'RAS',
-                'veterinarian' => '/api/users/' . $user->getId()
+                'diagnosis' => 'RAS'
             ]
         ]);
 
