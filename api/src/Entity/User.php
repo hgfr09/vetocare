@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
 )]
-#[UniqueEntity(fields:['email'], message: "Cette email existe déjà.")]
+#[UniqueEntity(fields:['email'], message: "Cet email existe déjà.")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
