@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use App\Factory\AnimalFactory;
+use App\Factory\ConsultationFactory;
 use App\Factory\UserFactory;
 
 final class  ConsultationTest extends AbstractApiTestCase
@@ -80,5 +81,30 @@ final class  ConsultationTest extends AbstractApiTestCase
                 ]
             ]
         ]);
+    }
+
+    public function testSuccessfullyGetAllConsultationsOfAVeterinarian(): void
+    {
+        $veterinarian = UserFactory::createOne();
+        AnimalFactory::createMany(2);
+        ConsultationFactory::createMany(3, function () use ($veterinarian) {
+            return ['veterinarian' => $veterinarian];
+        });
+
+        ConsultationFactory::createOne(['veterinarian' => UserFactory::createOne()]);
+
+        $response = static::createClient()->request('GET', "api/users/{$veterinarian->getId()}/consultations", [
+            "headers" => self::$HEADERS_READ
+        ]);
+
+        $this->assertResponseIsSuccessful();
+
+        $jsonResponse = $response->toArray();
+
+        $this->assertSame(3, $jsonResponse['totalItems']);
+
+        foreach ($jsonResponse['member'] as $consultation) {
+            $this->assertEquals($veterinarian->getId(), $consultation['veterinarian']['id']);
+        }
     }
 }
