@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
 )]
-#[UniqueEntity(fields:['email'], message: "Cet email existe déjà.")]
+#[UniqueEntity(fields: ['email'], message: "Cet email existe déjà.")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -30,8 +30,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 180)]
     #[Groups(['user:read', 'user:write', 'consultation:read'])]
-    #[Assert\NotBlank(message:"L'email est obligatoire.")]
-    #[Assert\Email(message:"L'email est invalide.")]
+    #[Assert\NotBlank(message: "L'email est obligatoire.")]
+    #[Assert\Email(message: "L'email est invalide.")]
     private ?string $email = null;
 
     /**

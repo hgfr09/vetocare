@@ -7,6 +7,8 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use App\Interface\UserAwareInterface;
 use App\Repository\ConsultationRepository;
 use Doctrine\DBAL\Types\Types;
@@ -18,6 +20,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     normalizationContext: ['groups' => ['consultation:read']],
     denormalizationContext: ['groups' => ['consultation:write']]
+)]
+#[ApiResource(
+    uriTemplate: '/users/{userId}/consultations',
+    uriVariables: [
+        'userId' => new Link(
+            fromClass: User::class,
+            fromProperty: 'consultations'
+        )
+    ],
+    operations: [new GetCollection()],
+    normalizationContext: ['groups' => ['consultation:read']]
 )]
 #[ApiFilter(DateFilter::class, properties: ['date'])]
 #[ApiFilter(OrderFilter::class, properties: ['date'])]
