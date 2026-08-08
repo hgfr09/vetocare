@@ -44,3 +44,7 @@ api/config/jwt/*.pem
 api/phpunit.xml
 api/.phpunit.cache/
 ###< phpunit/phpunit ###
+
+### Project
+.continue/
+.continueignore

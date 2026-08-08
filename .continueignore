@@ -1,5 +1,0 @@
-# .continueignore
-front/node_modules/
-
-api/vendor/
-api/var/
