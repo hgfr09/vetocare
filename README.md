@@ -2,16 +2,16 @@
 
 **Vetocare** est une solution de gestion centralisée (MVP) conçue pour moderniser les processus métiers d'une clinique vétérinaire en remplaçant les flux manuels par une infrastructure digitale robuste.
 
-## 🚀 Stack Technique
+## Stack Technique
 
-Le projet utilise une architecture moderne et scalable :
-*   **Backend** : Symfony 8.x / API Platform 4.3 (PHP 8.5+).
-*   **Frontend** : React 18+ (Architecture modulaire).
+Le projet repose sur les technologies suivantes :
+*   **Backend** : Symfony 8.1 / API Platform 4.3 — en cours de développement.
+*   **Frontend** : React + TypeScript + Vite — développement à venir.
 *   **Base de données** : MySQL (Développement & Test).
 *   **Sécurité** : Authentification JWT via `LexikJWTAuthenticationBundle`.
 
 ### 1. Prérequis
-*   PHP 8.3 ou supérieur.
+*   PHP 8.4 ou supérieur.
 *   Composer.
 *   Serveur MySQL local (via XAMPP, WAMP ou installation directe).
 *   Symfony CLI (recommandé pour le serveur local et HTTPS).
@@ -41,8 +41,7 @@ php bin/console doctrine:fixtures:load
 L'API sera accessible sur https://127.0.0.1:8000/api
 
 ### 5. Tests
-La qualité du code est assurée par des tests fonctionnels utilisant `ApiTestCase` et `Zenstruck Foundry`.
- L'isolation des tests (rollback des transactions) est garantie par `dama/doctrine-test-bundle`.
+La suite de tests fonctionnels utilise `ApiTestCase` et `Zenstruck Foundry`. L'isolation des tests est assurée par `dama/doctrine-test-bundle`.
 
 ***Lancer la suite de tests***
 `php bin/phpunit`
