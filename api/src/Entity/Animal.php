@@ -50,6 +50,7 @@ class Animal
 
     #[ORM\Column(length: 255)]
     #[Groups(['animal:read', 'animal:write'])]
+    #[Assert\NotBlank(message: "Le nom du propriétaire est obligatoire.")]
     #[Assert\Length(min: 3, minMessage: 'Trop court! Minimum 3 caractères.')]
     private ?string $ownerName = null;
 
