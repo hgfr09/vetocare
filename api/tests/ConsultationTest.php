@@ -35,7 +35,7 @@ final class  ConsultationTest extends AbstractApiTestCase
     public function testCreateConsultationAsAuthenticatedUser(): void
     {
         $animal = AnimalFactory::createOne();
-        $user = UserFactory::createOne(['roles' => ['ROLE_VET']]);
+        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
 
         $client = $this->createAuthenticatedClient($user);
 
@@ -49,6 +49,7 @@ final class  ConsultationTest extends AbstractApiTestCase
         ]);
 
         $this->assertResponseIsSuccessful();
+        $this->assertSame($user->getId(), $client->getResponse()->toArray()['veterinarian']['id']);
     }
 
     public function testCannotCreateConsultationWhenAnimalBirthDateIsInFuture(): void
