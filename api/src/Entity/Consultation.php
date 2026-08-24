@@ -55,7 +55,7 @@ class Consultation implements UserAwareInterface
 
     #[ORM\Column(length: 255)]
     #[Groups(['consultation:read', 'consultation:write'])]
-    #[Assert\NotBlank(message: "La motif est obligatoire.")]
+    #[Assert\NotBlank(message: "Le motif est obligatoire.")]
     private ?string $reason = null;
 
     #[ORM\Column(type: Types::TEXT)]
