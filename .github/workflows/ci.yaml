@@ -31,7 +31,10 @@ jobs:
                   php-version: "8.4"
 
             - name: Install dependencies
-              run: composer install  --no-interaction --prefer-dist
+              run: composer install  --no-interaction --prefer-dist --no-progress --optimize-autoloader
+
+            - name: Security Audit
+              run: composer audit
 
             - name: Generate test JWT keys
               run: php bin/console lexik:jwt:generate-keypair --no-interaction --env=test
