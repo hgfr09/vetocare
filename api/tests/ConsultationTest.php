@@ -8,7 +8,55 @@ use App\Factory\UserFactory;
 
 final class  ConsultationTest extends AbstractApiTestCase
 {
-    public function testCannotCreateConsultationAsAnonymous(): void
+    // Creation
+    public function testCreateConsultationAsAuthenticatedUser(): void
+    {
+        $animal = AnimalFactory::createOne();
+        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+
+        $client = $this->createAuthenticatedClient($user);
+
+        $client->request('POST', '/api/consultations', [
+            'headers' => self::$HEADERS_WRITE,
+            'json' => [
+                'animal' => '/api/animals/' . $animal->getId(),
+                'reason' => 'Control',
+                'diagnosis' => 'RAS'
+            ]
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame($user->getId(), $client->getResponse()->toArray()['veterinarian']['id']);
+    }
+
+    // Read
+    public function testSuccessfullyGetAllConsultationsOfAVeterinarian(): void
+    {
+        $veterinarian = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        AnimalFactory::createMany(2);
+        ConsultationFactory::createMany(3, function () use ($veterinarian) {
+            return ['veterinarian' => $veterinarian];
+        });
+
+        ConsultationFactory::createOne(['veterinarian' => UserFactory::createOne()]);
+
+        $response = static::createClient()->request('GET', "api/users/{$veterinarian->getId()}/consultations", [
+            "headers" => self::$HEADERS_READ
+        ]);
+
+        $this->assertResponseIsSuccessful();
+
+        $jsonResponse = $response->toArray();
+
+        $this->assertSame(3, $jsonResponse['totalItems']);
+
+        foreach ($jsonResponse['member'] as $consultation) {
+            $this->assertEquals($veterinarian->getId(), $consultation['veterinarian']['id']);
+        }
+    }
+
+    // Validation
+    public function testCannotCreateConsultationWithoutVeterinarian(): void
     {
         $animal = AnimalFactory::createOne();
         static::createClient()->request('POST', '/api/consultations', [
@@ -32,33 +80,14 @@ final class  ConsultationTest extends AbstractApiTestCase
         ]);
     }
 
-    public function testCreateConsultationAsAuthenticatedUser(): void
-    {
-        $animal = AnimalFactory::createOne();
-        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
-
-        $client = $this->createAuthenticatedClient($user);
-
-        $client->request('POST', '/api/consultations', [
-            'headers' => self::$HEADERS_WRITE,
-            'json' => [
-                'animal' => '/api/animals/' . $animal->getId(),
-                'reason' => 'Control',
-                'diagnosis' => 'RAS'
-            ]
-        ]);
-
-        $this->assertResponseIsSuccessful();
-        $this->assertSame($user->getId(), $client->getResponse()->toArray()['veterinarian']['id']);
-    }
-
-    public function testCannotCreateConsultationWhenAnimalBirthDateIsInFuture(): void
+    // Business Rules
+    public function testCannotCreateConsultationWhenDateIsBeforeAnimalBirthDate(): void
     {
         $animal = AnimalFactory::createOne([
             'dateOfBirth' => new \DateTimeImmutable()
         ]);
 
-        $user = UserFactory::createOne();
+        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
 
         $client = $this->createAuthenticatedClient($user);
 
@@ -82,30 +111,5 @@ final class  ConsultationTest extends AbstractApiTestCase
                 ]
             ]
         ]);
-    }
-
-    public function testSuccessfullyGetAllConsultationsOfAVeterinarian(): void
-    {
-        $veterinarian = UserFactory::createOne();
-        AnimalFactory::createMany(2);
-        ConsultationFactory::createMany(3, function () use ($veterinarian) {
-            return ['veterinarian' => $veterinarian];
-        });
-
-        ConsultationFactory::createOne(['veterinarian' => UserFactory::createOne()]);
-
-        $response = static::createClient()->request('GET', "api/users/{$veterinarian->getId()}/consultations", [
-            "headers" => self::$HEADERS_READ
-        ]);
-
-        $this->assertResponseIsSuccessful();
-
-        $jsonResponse = $response->toArray();
-
-        $this->assertSame(3, $jsonResponse['totalItems']);
-
-        foreach ($jsonResponse['member'] as $consultation) {
-            $this->assertEquals($veterinarian->getId(), $consultation['veterinarian']['id']);
-        }
     }
 }

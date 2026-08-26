@@ -8,6 +8,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserTest extends AbstractApiTestCase
 {
+    // Creation
     public function testCreateValidUser(): void
     {
         $reponse = static::createClient()->request('POST', '/api/users', [
@@ -20,27 +21,6 @@ class UserTest extends AbstractApiTestCase
 
         $this->assertResponseStatusCodeSame(201);
         $this->assertSame("user@test.com", $reponse->toArray()['email']);
-    }
-
-    public function testCannotCreateUsersWithSameEmail(): void
-    {
-        static::createClient()->request('POST', '/api/users', [
-            "headers" => self::$HEADERS_WRITE,
-            "json" => [
-                "email" => "user@test.com",
-                "plainPassword" => "Daniel"
-            ]
-        ]);
-        static::createClient()->request('POST', '/api/users', [
-            "headers" => self::$HEADERS_WRITE,
-            "json" => [
-                "email" => "user@test.com",
-                "plainPassword" => "Daniel125"
-            ]
-        ]);
-
-        $this->assertResponseStatusCodeSame(422);
-        $this->assertJsonContains(["description" => "email: Cet email existe déjà."]);
     }
 
     public function testDefaultUserRoleIsRoleVeto(): void
@@ -57,38 +37,7 @@ class UserTest extends AbstractApiTestCase
         $this->assertArraySubset(['ROLE_VETO'], $reponse->toArray()['roles']);
     }
 
-    public function testPlainPasswordIsNotIncludedInTheResponse(): void
-    {
-        $reponse = static::createClient()->request('POST', '/api/users', [
-            "headers" => self::$HEADERS_WRITE,
-            "json" => [
-                "email" => "user@test.com",
-                "plainPassword" => "Daniel"
-            ]
-        ]);
-
-        $this->assertResponseStatusCodeSame(201);
-        $this->assertArrayNotHasKey("plainPassword", $reponse->toArray());
-    }
-
-    public function testPasswordIsHashedInDatabase(): void
-    {
-        $plainPassword = "123456";
-        static::createClient()->request('POST', '/api/users', [
-            'headers' => self::$HEADERS_WRITE,
-            'json' => [
-                "email" => "user@test.com",
-                "plainPassword" => $plainPassword
-            ]
-        ]);
-
-        $userRepository = static::getContainer()->get(UserRepository::class);
-        $user = $userRepository->findOneBy(["email" => "user@test.com"]);
-
-        $this->assertNotSame($plainPassword, $user->getPassword());
-        $this->assertTrue(static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($user, $plainPassword));
-    }
-
+    // Update
     public function testUpdateUserWithoutPasswordKeepsCurrentPassword(): void
     {
         $plainPassword = "123456";
@@ -119,6 +68,7 @@ class UserTest extends AbstractApiTestCase
         $this->assertTrue(static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($modifiedUser, $plainPassword));
     }
 
+    // Validation 
     #[DataProvider('invalidUserProvider')]
     public function testCannotCreateInvalidUser(string $email, string $password, string $errorMessage): void
     {
@@ -142,5 +92,59 @@ class UserTest extends AbstractApiTestCase
             'Email is not valid' => ['test@test', 'Daniel', "email: L'email est invalide."],
             'Email is required' => ['', 'Daniel', "email: L'email est obligatoire."],
         ];
+    }
+
+    public function testCannotCreateUsersWithSameEmail(): void
+    {
+        static::createClient()->request('POST', '/api/users', [
+            "headers" => self::$HEADERS_WRITE,
+            "json" => [
+                "email" => "user@test.com",
+                "plainPassword" => "Daniel"
+            ]
+        ]);
+        static::createClient()->request('POST', '/api/users', [
+            "headers" => self::$HEADERS_WRITE,
+            "json" => [
+                "email" => "user@test.com",
+                "plainPassword" => "Daniel125"
+            ]
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+        $this->assertJsonContains(["description" => "email: Cet email existe déjà."]);
+    }
+
+    // Security
+    public function testPasswordIsHashedInDatabase(): void
+    {
+        $plainPassword = "123456";
+        static::createClient()->request('POST', '/api/users', [
+            'headers' => self::$HEADERS_WRITE,
+            'json' => [
+                "email" => "user@test.com",
+                "plainPassword" => $plainPassword
+            ]
+        ]);
+
+        $userRepository = static::getContainer()->get(UserRepository::class);
+        $user = $userRepository->findOneBy(["email" => "user@test.com"]);
+
+        $this->assertNotSame($plainPassword, $user->getPassword());
+        $this->assertTrue(static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($user, $plainPassword));
+    }
+
+    public function testPlainPasswordIsNotIncludedInTheResponse(): void
+    {
+        $reponse = static::createClient()->request('POST', '/api/users', [
+            "headers" => self::$HEADERS_WRITE,
+            "json" => [
+                "email" => "user@test.com",
+                "plainPassword" => "Daniel"
+            ]
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+        $this->assertArrayNotHasKey("plainPassword", $reponse->toArray());
     }
 }
