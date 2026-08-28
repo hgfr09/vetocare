@@ -6,32 +6,32 @@
 
 - [x] USER-001 — Create a valid user
 
-
 ### Read
 
-_No tests yet_
+- [x] USER-002 — Get a single user
+- [x] USER-003 — Get all users
 
 ### Update
 
-- [x] USER-005 — Keep current password when plainPassword is omitted
+- [x] USER-004 — Keep current password when plainPassword is omitted
 
 ### Delete
 
-_No tests yet_
+- [x] USER-005 — Delete a single user
 
 ### Validation
 
-- [x] USER-002 — Reject invalid user data
-- [x] USER-003 — Reject duplicate email
+- [x] USER-006 — Reject invalid user data
+- [x] USER-007 — Reject duplicate email
 
 ### Business Rules (BR)
 
-- [x] USER-004 — Assign ROLE_VETO by default
+- [x] USER-008 — Assign ROLE_VETO by default
 
 ### Security
 
-- [x] USER-006 — Do not expose plainPassword in API response
-- [x] USER-007 — Hash password in database
+- [x] USER-009 — Do not expose plainPassword in API response
+- [x] USER-010 — Hash password in database
 
 ## 2. Animal
 
