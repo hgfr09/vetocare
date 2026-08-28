@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -18,6 +24,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(validationContext: ['groups' => ['Default', 'user:create']]),
+        new Put(validationContext: ['groups' => ['Default', 'user:update']]),
+        new Patch(validationContext: ['groups' => ['Default', 'user:update']]),
+        new Delete()
+    ]
+
 )]
 #[UniqueEntity(fields: ['email'], message: "Cet email existe déjà.")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -48,7 +63,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[Groups(['user:write'])]
-    #[Assert\Length(min: 6, minMessage: "Le mot de passe doit avoir au moins 6 caractères.")]
+    #[Assert\Sequentially(
+        [
+            new Assert\NotBlank(
+                message: "Le mot de passe est obligatoire.",
+                groups: ['user:create']
+            ),
+            new Assert\Length(
+                min: 6,
+                minMessage: 'Le mot de passe doit avoir au moins {{ limit }} caractères.',
+                groups: ['user:create', 'user:update']
+            )
+        ],
+    )]
     private ?string $plainPassword = null;
 
     /**

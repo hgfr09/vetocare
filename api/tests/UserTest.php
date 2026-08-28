@@ -2,8 +2,10 @@
 
 namespace App\Tests;
 
+use App\Factory\UserFactory;
 use App\Repository\UserRepository;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserTest extends AbstractApiTestCase
@@ -19,22 +21,35 @@ class UserTest extends AbstractApiTestCase
             ]
         ]);
 
-        $this->assertResponseStatusCodeSame(201);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertSame("user@test.com", $reponse->toArray()['email']);
     }
 
-    public function testDefaultUserRoleIsRoleVeto(): void
+    // Read
+    public function testGetSingleUser(): void
     {
-        $reponse = static::createClient()->request('POST', '/api/users', [
-            "headers" => self::$HEADERS_WRITE,
-            "json" => [
-                "email" => "user@test.com",
-                "plainPassword" => "Daniel"
-            ]
+        $user = UserFactory::createOne();
+        $response = static::createClient()->request('GET', "/api/users/{$user->getId()}", [
+            'headers' => self::$HEADERS_READ
         ]);
 
-        $this->assertResponseStatusCodeSame(201);
-        $this->assertArraySubset(['ROLE_VETO'], $reponse->toArray()['roles']);
+        $this->assertResponseIsSuccessful();
+        $this->assertSame($user->getId(), $response->toArray()['id']);
+    }
+
+    public function testGetAllUsers(): void
+    {
+        $users = UserFactory::createMany(2);
+        $response = static::createClient()->request('GET', '/api/users', [
+            'headers' => self::$HEADERS_READ
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $data = $response->toArray()['member'];
+
+        $this->assertCount(2, $data);
+        $this->assertContains($users[0]->getId(), array_column($data, 'id'));
+        $this->assertContains($users[1]->getId(), array_column($data, 'id'));
     }
 
     // Update
@@ -68,9 +83,20 @@ class UserTest extends AbstractApiTestCase
         $this->assertTrue(static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($modifiedUser, $plainPassword));
     }
 
+    // Delete
+    public function testDeleteUser(): void
+    {
+        $user = UserFactory::createOne();
+        static::createClient()->request('DELETE', "/api/users/{$user->getId()}");
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        static::createClient()->request('GET', "/api/users/{$user->getId()}");
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
+    }
+
     // Validation 
     #[DataProvider('invalidUserProvider')]
-    public function testCannotCreateInvalidUser(string $email, string $password, string $errorMessage): void
+    public function testCannotCreateInvalidUser(string $email, string $password, string $propertyPath, string $errorMessage): void
     {
         static::createClient()->request('POST', '/api/users', [
             "headers" => self::$HEADERS_WRITE,
@@ -80,17 +106,25 @@ class UserTest extends AbstractApiTestCase
             ]
         ]);
 
-        $this->assertResponseStatusCodeSame(422);
-        $this->assertJsonContains(['description' => $errorMessage]);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        $this->assertJsonContains([
+            "violations" => [
+                [
+                    'propertyPath' => $propertyPath,
+                    'message' => $errorMessage
+                ]
+            ]
+        ]);
     }
 
     public static function invalidUserProvider(): array
     {
-        // email, password, error message
+        // email, password, propertyPath, error message
         return [
-            'Password is too short' => ['test@test.com', 'dani', 'plainPassword: Le mot de passe doit avoir au moins 6 caractères.'],
-            'Email is not valid' => ['test@test', 'Daniel', "email: L'email est invalide."],
-            'Email is required' => ['', 'Daniel', "email: L'email est obligatoire."],
+            'Password is too short' => ['test@test.com', 'dani', 'plainPassword', 'Le mot de passe doit avoir au moins 6 caractères.'],
+            'Password is required' => ['test@test.com', '',  'plainPassword', 'Le mot de passe est obligatoire.'],
+            'Email is not valid' => ['test@test', 'Daniel', 'email', "L'email est invalide."],
+            'Email is required' => ['', 'Daniel', 'email', "L'email est obligatoire."],
         ];
     }
 
@@ -111,8 +145,23 @@ class UserTest extends AbstractApiTestCase
             ]
         ]);
 
-        $this->assertResponseStatusCodeSame(422);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonContains(["description" => "email: Cet email existe déjà."]);
+    }
+
+    // Business Rules
+    public function testDefaultUserRoleIsRoleVeto(): void
+    {
+        $response = static::createClient()->request('POST', '/api/users', [
+            "headers" => self::$HEADERS_WRITE,
+            "json" => [
+                "email" => "user@test.com",
+                "plainPassword" => "Daniel"
+            ]
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
+        $this->assertArraySubset(['ROLE_VETO'], $response->toArray()['roles']);
     }
 
     // Security
@@ -144,7 +193,7 @@ class UserTest extends AbstractApiTestCase
             ]
         ]);
 
-        $this->assertResponseStatusCodeSame(201);
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertArrayNotHasKey("plainPassword", $reponse->toArray());
     }
 }
