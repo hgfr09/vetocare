@@ -2,12 +2,16 @@
 
 namespace App\Tests;
 
-class AnimalTest extends AbstractApiTestCase
+use App\Factory\UserFactory;
+
+final class AnimalTest extends AbstractApiTestCase
 {
     // Creation
     public function testCreateAnimalSuccess(): void
     {
-        static::createClient()->request('POST', '/api/animals', [
+        $client = $this->createAuthenticatedClient(UserFactory::createOne(['roles' => ['ROLE_VETO']]));
+
+        $client->request('POST', '/api/animals', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [
                 'name' => 'Rex',
@@ -29,7 +33,7 @@ class AnimalTest extends AbstractApiTestCase
     //  Validation
     public function testCannotCreateAnimalWithInvalidOwnerName(): void
     {
-        $client = static::createClient();
+        $client = $this->createAuthenticatedClient(UserFactory::createOne(['roles' => ['ROLE_VETO']]));
 
         $client->request('POST', '/api/animals', [
             'headers' => self::$HEADERS_WRITE,
@@ -57,7 +61,8 @@ class AnimalTest extends AbstractApiTestCase
     // Business Rules
     public function testCannotCreateAnimalWithDateInFuture(): void
     {
-        static::createClient()->request('POST', '/api/animals', [
+        $client = $this->createAuthenticatedClient(UserFactory::createOne(['roles' => ['ROLE_VETO']]));
+        $client->request('POST', '/api/animals', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [
                 'name' => 'Rex',

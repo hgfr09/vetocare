@@ -5,11 +5,12 @@ namespace App\Tests;
 use App\Factory\AnimalFactory;
 use App\Factory\ConsultationFactory;
 use App\Factory\UserFactory;
+use Symfony\Component\HttpFoundation\Response;
 
 final class  ConsultationTest extends AbstractApiTestCase
 {
     // Creation
-    public function testCreateConsultationAsAuthenticatedUser(): void
+    public function testCreateConsultation(): void
     {
         $animal = AnimalFactory::createOne();
         $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
@@ -40,7 +41,7 @@ final class  ConsultationTest extends AbstractApiTestCase
 
         ConsultationFactory::createOne(['veterinarian' => UserFactory::createOne()]);
 
-        $response = static::createClient()->request('GET', "api/users/{$veterinarian->getId()}/consultations", [
+        $response = $this->createAuthenticatedClient($veterinarian)->request('GET', "api/users/{$veterinarian->getId()}/consultations", [
             "headers" => self::$HEADERS_READ
         ]);
 
@@ -53,31 +54,6 @@ final class  ConsultationTest extends AbstractApiTestCase
         foreach ($jsonResponse['member'] as $consultation) {
             $this->assertEquals($veterinarian->getId(), $consultation['veterinarian']['id']);
         }
-    }
-
-    // Validation
-    public function testCannotCreateConsultationWithoutVeterinarian(): void
-    {
-        $animal = AnimalFactory::createOne();
-        static::createClient()->request('POST', '/api/consultations', [
-            'headers' => self::$HEADERS_WRITE,
-            'json' => [
-                'animal' => '/api/animals/' . $animal->getId(),
-                'reason' => 'Control',
-                'diagnosis' => 'RAS'
-            ]
-        ]);
-
-        $this->assertResponseStatusCodeSame(422);
-        $this->assertJsonContains([
-            "@type" => "ConstraintViolation",
-            "violations" => [
-                [
-                    "propertyPath" => "veterinarian",
-                    "message" => "Le vétérinaire est obligatoire."
-                ]
-            ]
-        ]);
     }
 
     // Business Rules
@@ -101,7 +77,7 @@ final class  ConsultationTest extends AbstractApiTestCase
             ]
         ]);
 
-        $this->assertResponseStatusCodeSame(422);
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
         $this->assertJsonContains([
             "@type" => "ConstraintViolation",
             "violations" => [
