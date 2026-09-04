@@ -6,18 +6,9 @@
 
 - [x] USER-001 — Create a valid user
 
-### Read
-
-- [x] USER-002 — Get a single user
-- [x] USER-003 — Get all users
-
 ### Update
 
 - [x] USER-004 — Keep current password when plainPassword is omitted
-
-### Delete
-
-- [x] USER-005 — Delete a single user
 
 ### Validation
 
@@ -30,8 +21,16 @@
 
 ### Security
 
+- [x] USER-003 — Anonymous user cannot access protected API
 - [x] USER-009 — Do not expose plainPassword in API response
 - [x] USER-010 — Hash password in database
+- [x] USER-012 — User can access own profile
+- [x] USER-013 — User cannot access another user's profile
+- [x] USER-014 — User can update own profile
+- [x] USER-011 — User cannot update another user's profile
+- [x] USER-005 — Only admin can access all users
+- [x] USER-002 — Only admin can delete users
+- [x] USER-015 — Admin can access another user's profile
 
 ## 2. Animal
 
@@ -64,13 +63,11 @@ _No tests yet_
 
 ### Creation
 
-- [x] CONSULT-001 — Create a consultation as an authenticated user
-  - Test: `testCreateConsultationAsAuthenticatedUser`
+- [x] CONSULT-001 — Create a consultation 
 
 ### Read
 
 - [x] CONSULT-004 — Get all consultations of a veterinarian
-  - Test: `testSuccessfullyGetAllConsultationsOfAVeterinarian`
 
 ### Update
 
@@ -83,12 +80,10 @@ _No tests yet._
 ### Validation
 
 - [x] CONSULT-002 — Reject consultation without veterinarian
-  - Test: `testCannotCreateConsultationWithoutVeterinarian`
 
 ### Business Rules (BR)
 
 - [x] CONSULT-003 — Reject consultation dated before animal's birth date
-  - Test: `testCannotCreateConsultationWhenDateIsBeforeAnimalBirthDate`
 
 ### Security
 
