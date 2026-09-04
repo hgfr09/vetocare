@@ -19,6 +19,11 @@ abstract class AbstractApiTestCase extends ApiTestCase
         "Content-Type" => "application/ld+json"
     ];
 
+    protected static array $HEADERS_UPDATE = [
+        "Accept"=>"application/ld+json",
+        "Content-Type" => "application/merge-patch+json"
+    ];
+
     protected function createAuthenticatedClient(User $user): Client
     {
         self::bootKernel();

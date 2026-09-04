@@ -17,9 +17,7 @@ final class UserFactory extends PersistentObjectFactory
      *
      * @todo inject services if required
      */
-    public function __construct(private UserPasswordHasherInterface $passwordHasher)
-    {
-    }
+    public function __construct(private UserPasswordHasherInterface $passwordHasher) {}
 
     #[\Override]
     public static function class(): string
@@ -49,10 +47,14 @@ final class UserFactory extends PersistentObjectFactory
     protected function initialize(): static
     {
         return $this
-            ->afterInstantiate(function(User $user): void {
+            ->afterInstantiate(function (User $user): void {
                 $user->setPassword($this->passwordHasher->hashPassword($user, $user->getPlainPassword()));
                 $user->eraseCredentials();
-            })
-        ;
+            });
+    }
+
+    public static function createAdmin(callable | array $attributes = []): User
+    {
+        return static::new(['roles' => ['ROLE_ADMIN']])->create($attributes);
     }
 }

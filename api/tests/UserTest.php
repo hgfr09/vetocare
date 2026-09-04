@@ -13,7 +13,7 @@ class UserTest extends AbstractApiTestCase
     // Creation
     public function testCreateValidUser(): void
     {
-        $reponse = static::createClient()->request('POST', '/api/users', [
+        $response = static::createClient()->request('POST', '/api/users', [
             "headers" => self::$HEADERS_WRITE,
             "json" => [
                 "email" => "user@test.com",
@@ -22,34 +22,7 @@ class UserTest extends AbstractApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertSame("user@test.com", $reponse->toArray()['email']);
-    }
-
-    // Read
-    public function testGetSingleUser(): void
-    {
-        $user = UserFactory::createOne();
-        $response = static::createClient()->request('GET', "/api/users/{$user->getId()}", [
-            'headers' => self::$HEADERS_READ
-        ]);
-
-        $this->assertResponseIsSuccessful();
-        $this->assertSame($user->getId(), $response->toArray()['id']);
-    }
-
-    public function testGetAllUsers(): void
-    {
-        $users = UserFactory::createMany(2);
-        $response = static::createClient()->request('GET', '/api/users', [
-            'headers' => self::$HEADERS_READ
-        ]);
-
-        $this->assertResponseIsSuccessful();
-        $data = $response->toArray()['member'];
-
-        $this->assertCount(2, $data);
-        $this->assertContains($users[0]->getId(), array_column($data, 'id'));
-        $this->assertContains($users[1]->getId(), array_column($data, 'id'));
+        $this->assertSame("user@test.com", $response->toArray()['email']);
     }
 
     // Update
@@ -68,11 +41,8 @@ class UserTest extends AbstractApiTestCase
         $this->assertResponseIsSuccessful();
         $user = static::getContainer()->get(UserRepository::class)->findOneBy(['email' => "user@test.com"]);
 
-        static::createClient()->request('PATCH', "/api/users/{$user->getId()}", [
-            "headers" => [
-                "Accept" => "application/ld+json",
-                "Content-Type" => "application/merge-patch+json"
-            ],
+        $this->createAuthenticatedClient($user)->request('PATCH', "/api/users/{$user->getId()}", [
+            "headers" => self::$HEADERS_UPDATE,
             "json" => [
                 "email" => "user-modified@test.com",
             ]
@@ -81,17 +51,6 @@ class UserTest extends AbstractApiTestCase
         $this->assertResponseIsSuccessful();
         $modifiedUser = static::getContainer()->get(UserRepository::class)->findOneBy(['email' => "user-modified@test.com"]);
         $this->assertTrue(static::getContainer()->get(UserPasswordHasherInterface::class)->isPasswordValid($modifiedUser, $plainPassword));
-    }
-
-    // Delete
-    public function testDeleteUser(): void
-    {
-        $user = UserFactory::createOne();
-        static::createClient()->request('DELETE', "/api/users/{$user->getId()}");
-        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
-
-        static::createClient()->request('GET', "/api/users/{$user->getId()}");
-        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
     // Validation 
@@ -165,6 +124,83 @@ class UserTest extends AbstractApiTestCase
     }
 
     // Security
+    public function testAnonymousUserCannotAccessProtectedAPI(): void
+    {
+        static::createClient()->request('GET', '/api/animals');
+        $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
+    }
+
+    public function testUserCanAccessOwnProfile(): void
+    {
+        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $client = $this->createAuthenticatedClient($user);
+        $response = $client->request('GET', "/api/users/{$user->getId()}", [
+            'headers' => self::$HEADERS_READ
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame($user->getId(), $response->toArray()['id']);
+    }
+
+    public function testUserCanUpdateOwnProfile(): void
+    {
+        $user = UserFactory::createOne();
+        $response = $this->createAuthenticatedClient($user)->request("PATCH", "/api/users/{$user->getId()}", [
+            "headers" => self::$HEADERS_UPDATE,
+            "json" => [
+                "email" => "user-aupdated@test.com"
+            ]
+        ]);
+
+        $data = $response->toArray();
+
+        $this->assertResponseIsSuccessful();
+        $this->assertSame("user-aupdated@test.com", $data['email']);
+        $this->assertSame($user->getId(), $data['id']);
+    }
+
+    public function testUserCannotAccessAnotherUsersProfile(): void
+    {
+        $user1 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user2 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+
+        $client = $this->createAuthenticatedClient($user1);
+        $client->request('GET', "/api/users/{$user2->getId()}", [
+            'headers' => self::$HEADERS_READ
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testUserCannotUpdateAnotherUsersProfile(): void
+    {
+        $user1 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user2 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+
+        $client = $this->createAuthenticatedClient($user1);
+        $client->request('PATCH', "/api/users/{$user2->getId()}", [
+            "headers" => self::$HEADERS_UPDATE,
+            "json" => [
+                "email"=>"updated-user@test.com"
+            ]
+        ]);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+    }
+
+    public function testAdminCanAccessAnotherUsersProfile(): void
+    {
+        $admin = UserFactory::createAdmin();
+        $user2 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+
+        $client = $this->createAuthenticatedClient($admin);
+        $client->request('GET', "/api/users/{$user2->getId()}", [
+            'headers' => self::$HEADERS_READ
+        ]);
+
+        $this->assertResponseIsSuccessful();
+    }
+
     public function testPasswordIsHashedInDatabase(): void
     {
         $plainPassword = "123456";
@@ -185,7 +221,7 @@ class UserTest extends AbstractApiTestCase
 
     public function testPlainPasswordIsNotIncludedInTheResponse(): void
     {
-        $reponse = static::createClient()->request('POST', '/api/users', [
+        $response = static::createClient()->request('POST', '/api/users', [
             "headers" => self::$HEADERS_WRITE,
             "json" => [
                 "email" => "user@test.com",
@@ -194,6 +230,40 @@ class UserTest extends AbstractApiTestCase
         ]);
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
-        $this->assertArrayNotHasKey("plainPassword", $reponse->toArray());
+        $this->assertArrayNotHasKey("plainPassword", $response->toArray());
+    }
+
+    public function testAdminCanAccessAllUsers(): void
+    {
+        $user = UserFactory::createOne();
+        $admin = UserFactory::createAdmin();
+
+        $client = $this->createAuthenticatedClient($admin);
+        $response = $client->request('GET', '/api/users', [
+            'headers' => self::$HEADERS_READ
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $data = $response->toArray()['member'];
+
+        $this->assertCount(2, $data);
+        $this->assertContains($user->getId(), array_column($data, 'id'));
+        $this->assertContains($admin->getId(), array_column($data, 'id'));
+    }
+
+    public function testOnlyAdminCanDeleteUser(): void
+    {
+        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $admin = UserFactory::createAdmin();
+
+        $this->createAuthenticatedClient($user)->request('DELETE', "/api/users/{$user->getId()}");
+        $this->assertResponseStatusCodeSame(Response::HTTP_FORBIDDEN);
+
+        $client = $this->createAuthenticatedClient($admin);
+        $client->request('DELETE', "/api/users/{$user->getId()}");
+        $this->assertResponseStatusCodeSame(Response::HTTP_NO_CONTENT);
+
+        $client->request('GET', "/api/users/{$user->getId()}");
+        $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 }

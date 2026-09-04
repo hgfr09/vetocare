@@ -25,14 +25,25 @@ use Symfony\Component\Validator\Constraints as Assert;
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
     operations: [
-        new Get(),
-        new GetCollection(),
+        new Get(
+            security: "is_granted('USER_ACCESS', object)"
+        ),
+        new GetCollection(
+            security: "is_granted('ROLE_ADMIN')"
+        ),
         new Post(validationContext: ['groups' => ['Default', 'user:create']]),
-        new Put(validationContext: ['groups' => ['Default', 'user:update']]),
-        new Patch(validationContext: ['groups' => ['Default', 'user:update']]),
-        new Delete()
+        new Put(
+            validationContext: ['groups' => ['Default', 'user:update']],
+            security: "is_granted('USER_ACCESS', object)"
+        ),
+        new Patch(
+            validationContext: ['groups' => ['Default', 'user:update']],
+            security: "is_granted('USER_ACCESS', object)"
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN')"
+        )
     ]
-
 )]
 #[UniqueEntity(fields: ['email'], message: "Cet email existe déjà.")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
