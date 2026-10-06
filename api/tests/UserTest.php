@@ -2,6 +2,7 @@
 
 namespace App\Tests;
 
+use App\Factory\AnimalFactory;
 use App\Factory\UserFactory;
 use App\Repository\UserRepository;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -121,6 +122,56 @@ class UserTest extends AbstractApiTestCase
 
         $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);
         $this->assertArraySubset(['ROLE_VETO'], $response->toArray()['roles']);
+    }
+
+    public function testCannotDeleteUserWithLinkedAnimals(): void
+    {
+        $response = $this->createAuthenticatedClient(UserFactory::createOne())->request('POST', '/api/animals', [
+            'headers' => self::$HEADERS_WRITE,
+            'json' => [
+                'name' => 'Rex',
+                'species' => 'Canidé',
+                'dateOfBirth' => '2024-01-01',
+                'ownerName' => 'Marc'
+            ]
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $data = $response->toArray();
+
+        $this->assertSame('Rex', $data['name']);
+        $userUri = $data['veterinarian']['@id'];
+
+        $resp = $this->createAuthenticatedClient(UserFactory::createAdmin())->request('DELETE', $userUri);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertSame('Impossible de supprimer un utilisateur associé à des animaux.', $resp->toArray(false)['description']);
+    }
+
+    public function testCannotDeleteUserWithLinkedConsultations(): void
+    {
+        $animal = AnimalFactory::createOne();
+
+        $response = $this->createAuthenticatedClient(UserFactory::createOne())->request('POST', '/api/consultations', [
+            'headers' => self::$HEADERS_WRITE,
+            'json' => [
+                'animal' => '/api/animals/' . $animal->getId(),
+                'date' => new \DateTimeImmutable('yesterday')->format('c'),
+                'reason' => 'Control',
+                'diagnosis' => 'RAS'
+            ]
+        ]);
+
+        $this->assertResponseIsSuccessful();
+        $data = $response->toArray();
+
+        $this->assertSame('Control', $data['reason']);
+        $userUri = $data['veterinarian']['@id'];
+
+        $resp = $this->createAuthenticatedClient(UserFactory::createAdmin())->request('DELETE', $userUri);
+
+        $this->assertResponseStatusCodeSame(Response::HTTP_CONFLICT);
+        $this->assertSame('Impossible de supprimer un utilisateur ayant des consultations.', $resp->toArray(false)['description']);
     }
 
     // Security

@@ -18,6 +18,8 @@
 ### Business Rules (BR)
 
 - [x] USER-008 — Assign ROLE_VETO by default
+- [x] USER-016 — Reject user deletion if linked to animals
+- [x] USER-017 — Reject user deletion if linked to consultations
 
 ### Security
 
@@ -36,7 +38,7 @@
 
 ### Creation
 - [x] ANIMAL-001 — Create a valid animal
-  - Test: `testCreateAnimalSuccess`
+  
 
 ### Read
 
@@ -46,14 +48,17 @@ _No tests yet_
 
 _No tests yet_
 
+### Delete
+
+  - [ ] ANIMAL-004 — Only responsible veterinarian or admin can delete animal
+  - [ ] ANIMAL-005 — Reject animal deletion if linked to consultations
+
 ### Validation
 
 - [x] ANIMAL-002 — Reject owner name that is too short
-  - Test: `testCannotCreateAnimalWithInvalidOwnerName`
 
 ### Business Rules (BR)
 - [x] ANIMAL-003 — Reject a birth date in the future
-  - Test: `testCannotCreateAnimalWithDateInFuture`
 
 ### Security
 
