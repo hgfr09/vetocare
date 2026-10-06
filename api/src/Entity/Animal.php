@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use App\Interface\UserAwareInterface;
 use App\Repository\AnimalRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -20,7 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['dateOfBirth'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['species', 'ownerName' => 'partial'])]
-class Animal
+class Animal implements UserAwareInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -58,8 +59,13 @@ class Animal
      * @var Collection<int, Consultation>
      */
     #[ORM\OneToMany(targetEntity: Consultation::class, mappedBy: 'animal')]
-    #[Groups(['animal:read'])]
     private Collection $consultations;
+
+    #[ORM\ManyToOne(inversedBy: 'animals')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotBlank(groups: ['internal'], message: "Le vétérinaire est obligatoire.")]
+    #[Groups(['animal:read'])]
+    private ?User $veterinarian = null;
 
     public function __construct()
     {
@@ -157,6 +163,18 @@ class Animal
                 $consultation->setAnimal(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getVeterinarian(): ?User
+    {
+        return $this->veterinarian;
+    }
+
+    public function setVeterinarian(?User $veterinarian): static
+    {
+        $this->veterinarian = $veterinarian;
 
         return $this;
     }

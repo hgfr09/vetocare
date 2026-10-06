@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\Validator\Exception\ValidationException;
+use App\Entity\User;
 use App\Interface\UserAwareInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
@@ -20,11 +23,11 @@ class UserAwareProcessor implements ProcessorInterface
         private ValidatorInterface $validator
     ) {}
 
-    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = [])
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         if ($data instanceof UserAwareInterface && null === $data->getVeterinarian()) {
-            if ($user = $this->security->getUser()) {
-                // @var User $user
+            $user = $this->security->getUser();
+            if ($user  instanceof User) {
                 $data->setVeterinarian($user);
             } else {
                 $violations = $this->validator->validate($data, groups: ['internal']);

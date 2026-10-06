@@ -181,7 +181,7 @@ class UserTest extends AbstractApiTestCase
         $client->request('PATCH', "/api/users/{$user2->getId()}", [
             "headers" => self::$HEADERS_UPDATE,
             "json" => [
-                "email"=>"updated-user@test.com"
+                "email" => "updated-user@test.com"
             ]
         ]);
 

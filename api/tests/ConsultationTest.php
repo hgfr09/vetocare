@@ -12,7 +12,8 @@ final class  ConsultationTest extends AbstractApiTestCase
     // Creation
     public function testCreateConsultation(): void
     {
-        $animal = AnimalFactory::createOne();
+        $animal = AnimalFactory::createOne(['veterinarian' => UserFactory::createOne()]);
+
         $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
 
         $client = $this->createAuthenticatedClient($user);
@@ -34,7 +35,8 @@ final class  ConsultationTest extends AbstractApiTestCase
     public function testSuccessfullyGetAllConsultationsOfAVeterinarian(): void
     {
         $veterinarian = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
-        AnimalFactory::createMany(2);
+        AnimalFactory::createMany(2, ['veterinarian' => UserFactory::createOne()]);
+
         ConsultationFactory::createMany(3, function () use ($veterinarian) {
             return ['veterinarian' => $veterinarian];
         });
@@ -60,7 +62,8 @@ final class  ConsultationTest extends AbstractApiTestCase
     public function testCannotCreateConsultationWhenDateIsBeforeAnimalBirthDate(): void
     {
         $animal = AnimalFactory::createOne([
-            'dateOfBirth' => new \DateTimeImmutable()
+            'dateOfBirth' => new \DateTimeImmutable(),
+            'veterinarian' => UserFactory::createOne()
         ]);
 
         $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);

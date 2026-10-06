@@ -17,11 +17,14 @@ final class AppStory extends Story
         UserFactory::createMany(2);
 
         // Create admin
-        UserFactory::createOne(['email' => 'admin@test.com', 'roles' => ['ROLE_ADMIN']]);
-
+        UserFactory::createAdmin(['email' => 'admin@test.com']);
 
         // Create Animal
-        AnimalFactory::createMany(10);
+        AnimalFactory::createMany(10, function () {
+            return [
+                'veterinarian' => UserFactory::random()
+            ];
+        });
 
         // Create Consultation
         ConsultationFactory::createMany(50, function () {

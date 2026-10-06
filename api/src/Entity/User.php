@@ -51,11 +51,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['user:read', 'consultation:read'])]
+    #[Groups(['user:read', 'consultation:read', 'animal:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['user:read', 'user:write', 'consultation:read'])]
+    #[Groups(['user:read', 'user:write', 'consultation:read', 'animal:read'])]
     #[Assert\NotBlank(message: "L'email est obligatoire.")]
     #[Assert\Email(message: "L'email est invalide.")]
     private ?string $email = null;
@@ -95,10 +95,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Consultation::class, mappedBy: 'veterinarian')]
     private Collection $consultations;
 
+    /**
+     * @var Collection<int, Animal>
+     */
+    #[ORM\OneToMany(targetEntity: Animal::class, mappedBy: 'veterinarian')]
+    private Collection $animals;
+
     public function __construct()
     {
         $this->roles = ['ROLE_VETO'];
         $this->consultations = new ArrayCollection();
+        $this->animals = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -218,6 +225,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             if ($consultation->getVeterinarian() === $this) {
                 $consultation->setVeterinarian(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Animal>
+     */
+    public function getAnimals(): Collection
+    {
+        return $this->animals;
+    }
+
+    public function addAnimal(Animal $animal): static
+    {
+        if (!$this->animals->contains($animal)) {
+            $this->animals->add($animal);
+            $animal->setVeterinarian($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnimal(Animal $animal): static
+    {
+        if ($this->animals->removeElement($animal)) {
+            throw new \LogicException("Un animal ne peut pas exister sans vétérinaire.");
         }
 
         return $this;

@@ -15,9 +15,7 @@ final class AnimalFactory extends PersistentObjectFactory
      *
      * @todo inject services if required
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     #[\Override]
     public static function class(): string
@@ -38,7 +36,8 @@ final class AnimalFactory extends PersistentObjectFactory
             'name' => self::faker()->unique()->firstName(),
             'ownerName' => self::faker()->name(),
             'species' => self::faker()->sentence(2),
-            'breed'=> self::faker()->sentence(3)
+            'breed' => self::faker()->sentence(3),
+            'veterinarian' => UserFactory::new()
         ];
     }
 

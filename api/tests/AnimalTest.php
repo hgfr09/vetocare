@@ -9,7 +9,8 @@ final class AnimalTest extends AbstractApiTestCase
     // Creation
     public function testCreateAnimalSuccess(): void
     {
-        $client = $this->createAuthenticatedClient(UserFactory::createOne(['roles' => ['ROLE_VETO']]));
+        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $client = $this->createAuthenticatedClient($user);
 
         $client->request('POST', '/api/animals', [
             'headers' => self::$HEADERS_WRITE,
@@ -26,7 +27,11 @@ final class AnimalTest extends AbstractApiTestCase
             'name' => 'Rex',
             'species' => 'Canidé',
             'dateOfBirth' => '2024-01-01T00:00:00+00:00',
-            'ownerName' => 'Abram'
+            'ownerName' => 'Abram',
+            'veterinarian' => [
+                'id' => $user->getId(),
+                'email' => $user->getEmail()
+            ]
         ]);
     }
 
