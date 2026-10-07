@@ -6,6 +6,11 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Interface\UserAwareInterface;
 use App\Repository\AnimalRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -17,7 +22,24 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: AnimalRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['animal:read']],
-    denormalizationContext: ['groups' => ['animal:write']]
+    denormalizationContext: ['groups' => ['animal:write']],
+    operations: [
+        new Get(
+            security: "is_granted('ROLE_VETO')"
+        ),
+        new GetCollection(
+            security: "is_granted('ROLE_VETO')"
+        ),
+        new Patch(
+            security: "is_granted('ROLE_VETO')"
+        ),
+        new Post(
+            security: "is_granted('ROLE_VETO')"
+        ),
+        new Delete(
+            security: "is_granted('ANIMAL_DELETE', object)"
+        )
+    ]
 )]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['dateOfBirth'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['species', 'ownerName' => 'partial'])]

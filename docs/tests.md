@@ -39,7 +39,6 @@
 ### Creation
 - [x] ANIMAL-001 — Create a valid animal
   
-
 ### Read
 
 _No tests yet_
@@ -50,8 +49,8 @@ _No tests yet_
 
 ### Delete
 
-  - [ ] ANIMAL-004 — Only responsible veterinarian or admin can delete animal
-  - [ ] ANIMAL-005 — Reject animal deletion if linked to consultations
+  - [x] ANIMAL-004 — Only responsible veterinarian or admin can delete animal
+  - [x] ANIMAL-005 — Reject animal deletion if linked to consultations
 
 ### Validation
 
@@ -68,7 +67,7 @@ _No tests yet_
 
 ### Creation
 
-- [x] CONSULT-001 — Create a consultation 
+- [x] CONSULT-001 — Create a consultation
 
 ### Read
 
