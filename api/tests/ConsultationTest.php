@@ -12,9 +12,9 @@ final class  ConsultationTest extends AbstractApiTestCase
     // Creation
     public function testCreateConsultation(): void
     {
-        $animal = AnimalFactory::createOne(['veterinarian' => UserFactory::createOne()]);
+        $animal = AnimalFactory::createOne();
 
-        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user = UserFactory::createVeterinarian();
 
         $client = $this->createAuthenticatedClient($user);
 
@@ -34,14 +34,14 @@ final class  ConsultationTest extends AbstractApiTestCase
     // Read
     public function testSuccessfullyGetAllConsultationsOfAVeterinarian(): void
     {
-        $veterinarian = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
-        AnimalFactory::createMany(2, ['veterinarian' => UserFactory::createOne()]);
+        $veterinarian = UserFactory::createVeterinarian();
+        AnimalFactory::createMany(2);
 
         ConsultationFactory::createMany(3, function () use ($veterinarian) {
             return ['veterinarian' => $veterinarian];
         });
 
-        ConsultationFactory::createOne(['veterinarian' => UserFactory::createOne()]);
+        ConsultationFactory::createOne();
 
         $response = $this->createAuthenticatedClient($veterinarian)->request('GET', "api/users/{$veterinarian->getId()}/consultations", [
             "headers" => self::$HEADERS_READ
@@ -62,11 +62,10 @@ final class  ConsultationTest extends AbstractApiTestCase
     public function testCannotCreateConsultationWhenDateIsBeforeAnimalBirthDate(): void
     {
         $animal = AnimalFactory::createOne([
-            'dateOfBirth' => new \DateTimeImmutable(),
-            'veterinarian' => UserFactory::createOne()
+            'dateOfBirth' => new \DateTimeImmutable()
         ]);
 
-        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user = UserFactory::createVeterinarian();
 
         $client = $this->createAuthenticatedClient($user);
 

@@ -3,7 +3,6 @@
 namespace App\Factory;
 
 use App\Entity\Consultation;
-use Zenstruck\Foundry\Object\Instantiator;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 
 /**
@@ -37,6 +36,7 @@ final class ConsultationFactory extends PersistentObjectFactory
             'diagnosis' => self::faker()->text(200),
             'reason' => self::faker()->text(100),
             'prescribedTreatment' => self::faker()->text(200),
+            'veterinarian' => UserFactory::new()
         ];
     }
 

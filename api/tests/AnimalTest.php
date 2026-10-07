@@ -9,7 +9,7 @@ final class AnimalTest extends AbstractApiTestCase
     // Creation
     public function testCreateAnimalSuccess(): void
     {
-        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user = UserFactory::createVeterinarian();
         $client = $this->createAuthenticatedClient($user);
 
         $client->request('POST', '/api/animals', [
@@ -38,7 +38,7 @@ final class AnimalTest extends AbstractApiTestCase
     //  Validation
     public function testCannotCreateAnimalWithInvalidOwnerName(): void
     {
-        $client = $this->createAuthenticatedClient(UserFactory::createOne(['roles' => ['ROLE_VETO']]));
+        $client = $this->createAuthenticatedClient(UserFactory::createVeterinarian());
 
         $client->request('POST', '/api/animals', [
             'headers' => self::$HEADERS_WRITE,
@@ -66,7 +66,7 @@ final class AnimalTest extends AbstractApiTestCase
     // Business Rules
     public function testCannotCreateAnimalWithDateInFuture(): void
     {
-        $client = $this->createAuthenticatedClient(UserFactory::createOne(['roles' => ['ROLE_VETO']]));
+        $client = $this->createAuthenticatedClient(UserFactory::createVeterinarian());
         $client->request('POST', '/api/animals', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [

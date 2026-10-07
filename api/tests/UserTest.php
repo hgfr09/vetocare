@@ -126,7 +126,7 @@ class UserTest extends AbstractApiTestCase
 
     public function testCannotDeleteUserWithLinkedAnimals(): void
     {
-        $response = $this->createAuthenticatedClient(UserFactory::createOne())->request('POST', '/api/animals', [
+        $response = $this->createAuthenticatedClient(UserFactory::createVeterinarian())->request('POST', '/api/animals', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [
                 'name' => 'Rex',
@@ -152,7 +152,7 @@ class UserTest extends AbstractApiTestCase
     {
         $animal = AnimalFactory::createOne();
 
-        $response = $this->createAuthenticatedClient(UserFactory::createOne())->request('POST', '/api/consultations', [
+        $response = $this->createAuthenticatedClient(UserFactory::createVeterinarian())->request('POST', '/api/consultations', [
             'headers' => self::$HEADERS_WRITE,
             'json' => [
                 'animal' => '/api/animals/' . $animal->getId(),
@@ -183,7 +183,7 @@ class UserTest extends AbstractApiTestCase
 
     public function testUserCanAccessOwnProfile(): void
     {
-        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user = UserFactory::createVeterinarian();
         $client = $this->createAuthenticatedClient($user);
         $response = $client->request('GET', "/api/users/{$user->getId()}", [
             'headers' => self::$HEADERS_READ
@@ -195,7 +195,7 @@ class UserTest extends AbstractApiTestCase
 
     public function testUserCanUpdateOwnProfile(): void
     {
-        $user = UserFactory::createOne();
+        $user = UserFactory::createVeterinarian();
         $response = $this->createAuthenticatedClient($user)->request("PATCH", "/api/users/{$user->getId()}", [
             "headers" => self::$HEADERS_UPDATE,
             "json" => [
@@ -212,8 +212,8 @@ class UserTest extends AbstractApiTestCase
 
     public function testUserCannotAccessAnotherUsersProfile(): void
     {
-        $user1 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
-        $user2 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user1 = UserFactory::createVeterinarian();
+        $user2 = UserFactory::createVeterinarian();
 
         $client = $this->createAuthenticatedClient($user1);
         $client->request('GET', "/api/users/{$user2->getId()}", [
@@ -225,8 +225,8 @@ class UserTest extends AbstractApiTestCase
 
     public function testUserCannotUpdateAnotherUsersProfile(): void
     {
-        $user1 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
-        $user2 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user1 = UserFactory::createVeterinarian();
+        $user2 = UserFactory::createVeterinarian();
 
         $client = $this->createAuthenticatedClient($user1);
         $client->request('PATCH', "/api/users/{$user2->getId()}", [
@@ -242,7 +242,7 @@ class UserTest extends AbstractApiTestCase
     public function testAdminCanAccessAnotherUsersProfile(): void
     {
         $admin = UserFactory::createAdmin();
-        $user2 = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user2 = UserFactory::createVeterinarian();
 
         $client = $this->createAuthenticatedClient($admin);
         $client->request('GET', "/api/users/{$user2->getId()}", [
@@ -304,7 +304,7 @@ class UserTest extends AbstractApiTestCase
 
     public function testOnlyAdminCanDeleteUser(): void
     {
-        $user = UserFactory::createOne(['roles' => ['ROLE_VETO']]);
+        $user = UserFactory::createVeterinarian();
         $admin = UserFactory::createAdmin();
 
         $this->createAuthenticatedClient($user)->request('DELETE', "/api/users/{$user->getId()}");

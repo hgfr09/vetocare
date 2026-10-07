@@ -57,4 +57,9 @@ final class UserFactory extends PersistentObjectFactory
     {
         return static::new(['roles' => ['ROLE_ADMIN']])->create($attributes);
     }
+
+    public static function createVeterinarian(callable | array $attributes = []): User
+    {
+        return static::new(['roles' => ['ROLE_VETO']])->create($attributes);
+    }
 }
