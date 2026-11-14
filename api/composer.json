@@ -72,7 +72,8 @@
         ],
         "post-update-cmd": [
             "@auto-scripts"
-        ]
+        ],
+        "tests" : "php bin/phpunit"
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -95,6 +96,7 @@
         "symfony/monolog-bundle": "^3.0|^4.0.2",
         "symfony/stopwatch": "8.1.*",
         "symfony/web-profiler-bundle": "8.1.*",
+        "zenstruck/browser": "^1.14",
         "zenstruck/foundry": "^2.12"
     }
 }
