@@ -1,7 +1,7 @@
-# Technical Notes — Vetocare
+# Technical Notes — VetoCare
 
 ## 1. Contexte métier
-**Nom du projet :** Vetocare
+**Nom du projet :** VetoCare
 
 **Objectif :** Gestion des patients (animaux) et consultations pour une clinique vétérinaire.
 
@@ -13,7 +13,7 @@
 * Les vétérinaires peuvent se remplacer et accéder aux dossiers des patients de la clinique.
 * Lorsqu'un animal est créé, le vétérinaire connecté devient son vétérinaire responsable.
 * Tous les vétérinaires peuvent consulter et modifier les animaux.
-* Seul le vétérinaire responsable ou un administrateur peut supprimer un animal.
+* Seul un administrateur peut supprimer un animal.
 * Un animal ayant un historique de consultations ne peut pas être supprimé.
 * Un utilisateur ayant des consultations associées ne peut pas être supprimé.
 
@@ -23,7 +23,6 @@
 erDiagram
     ANIMAL ||--o{ CONSULTATION : "undergoes"
     USER ||--o{ CONSULTATION : "conducts"
-    USER ||--o{ ANIMAL : "responsible for"
 
     USER {
         int id PK
@@ -39,7 +38,6 @@ erDiagram
         string breed
         date_time date_of_birth
         string owner_name
-        int veterinarian_id FK
     }
 
     CONSULTATION {
