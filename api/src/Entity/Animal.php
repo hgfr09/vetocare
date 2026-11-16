@@ -11,7 +11,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Interface\UserAwareInterface;
 use App\Repository\AnimalRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -37,13 +36,13 @@ use Symfony\Component\Validator\Constraints as Assert;
             security: "is_granted('ROLE_VETO')"
         ),
         new Delete(
-            security: "is_granted('ANIMAL_DELETE', object)"
+            security: "is_granted('ROLE_ADMIN')"
         )
     ]
 )]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['dateOfBirth'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['species', 'ownerName' => 'partial'])]
-class Animal implements UserAwareInterface
+class Animal
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -82,12 +81,6 @@ class Animal implements UserAwareInterface
      */
     #[ORM\OneToMany(targetEntity: Consultation::class, mappedBy: 'animal')]
     private Collection $consultations;
-
-    #[ORM\ManyToOne(inversedBy: 'animals')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotBlank(groups: ['internal'], message: "Le vétérinaire est obligatoire.")]
-    #[Groups(['animal:read'])]
-    private ?User $veterinarian = null;
 
     public function __construct()
     {
@@ -185,18 +178,6 @@ class Animal implements UserAwareInterface
                 $consultation->setAnimal(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getVeterinarian(): ?User
-    {
-        return $this->veterinarian;
-    }
-
-    public function setVeterinarian(?User $veterinarian): static
-    {
-        $this->veterinarian = $veterinarian;
 
         return $this;
     }
