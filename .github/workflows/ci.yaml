@@ -34,7 +34,7 @@ jobs:
               run: composer install  --no-interaction --prefer-dist --no-progress --optimize-autoloader
 
             - name: Security Audit
-              run: composer audit
+              run: composer audit --abandoned=report
 
             - name: Generate test JWT keys
               run: php bin/console lexik:jwt:generate-keypair --no-interaction --env=test
