@@ -36,8 +36,7 @@ final class AnimalFactory extends PersistentObjectFactory
             'name' => self::faker()->unique()->firstName(),
             'ownerName' => self::faker()->name(),
             'species' => self::faker()->sentence(2),
-            'breed' => self::faker()->sentence(3),
-            'veterinarian' => UserFactory::new()
+            'breed' => self::faker()->sentence(3)
         ];
     }
 
