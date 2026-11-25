@@ -8,9 +8,8 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
-use App\State\UserDeleteProcessor;
+use App\State\UserRemoveProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -32,10 +31,9 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(
             security: "is_granted('ROLE_ADMIN')"
         ),
-        new Post(validationContext: ['groups' => ['Default', 'user:create']]),
-        new Put(
-            validationContext: ['groups' => ['Default', 'user:update']],
-            security: "is_granted('USER_ACCESS', object)"
+        new Post(
+            validationContext: ['groups' => ['Default', 'user:create']],
+            security: "is_granted('ROLE_ADMIN')"
         ),
         new Patch(
             validationContext: ['groups' => ['Default', 'user:update']],
@@ -43,7 +41,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Delete(
             security: "is_granted('ROLE_ADMIN')",
-            processor: UserDeleteProcessor::class
+            processor: UserRemoveProcessor::class
         )
     ]
 )]

@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Repository\AnimalRepository;
+use App\State\AnimalRemoveProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -22,20 +23,14 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     normalizationContext: ['groups' => ['animal:read']],
     denormalizationContext: ['groups' => ['animal:write']],
+    security: "is_granted('ROLE_VETO')",
     operations: [
-        new Get(
-            security: "is_granted('ROLE_VETO')"
-        ),
-        new GetCollection(
-            security: "is_granted('ROLE_VETO')"
-        ),
-        new Patch(
-            security: "is_granted('ROLE_VETO')"
-        ),
-        new Post(
-            security: "is_granted('ROLE_VETO')"
-        ),
+        new Get(),
+        new GetCollection(),
+        new Patch(),
+        new Post(),
         new Delete(
+            processor: AnimalRemoveProcessor::class,
             security: "is_granted('ROLE_ADMIN')"
         )
     ]
